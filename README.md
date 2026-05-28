@@ -349,7 +349,7 @@ cp SKILL.md ~/.opencode/skills/excel-analyst/SKILL.md
 
 ## How to use
 
-Just point your agent at any Excel file:
+Just point your agent at any Excel file: (give the absolute path to excel file than uploading it to the chat window, the MCP will process it from the target location. This is done to overcome the preprocesisng and chunking done by various softwares like OWUI, LMSTUDIO ETC)
 
 ```
 analyse /data/Budget_Q2_2026.xlsx
