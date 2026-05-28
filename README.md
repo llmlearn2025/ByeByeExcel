@@ -1,6 +1,4 @@
 # ByeByeExcel
-Solving AI Limitations on Large Excel Analysis (>50k Rows): A Metadata-Driven Architecture.
-# ByeByeExcel
 
 An intelligent Excel analysis and data processing system that brings LLM-powered insights directly from your spreadsheets.
 
@@ -12,13 +10,25 @@ ByeByeExcel is a Model Context Protocol (MCP) server that gives LLM agents (Clau
 
 ## Features
 
+### Workbook Intelligence & Skill Management
+
 - **Intelligent Workbook Analysis** - Automatic structure scanning, format detection, and column type classification
-- **Plain English Commands** - Execute analysis tasks using natural language ("summarise Revenue by Region")
-- **Large File Support** - Handle 1M+ row files with SQLite-backed chunked processing
-- **Data Quality Auditing** - Detect formula overrides, logic violations, type errors, and consistency issues
-- **Fuzzy Deduplication** - Smart duplicate detection with configurable normalisers for names, dates, codes, and text
-- **Knowledge Management** - Per-workbook query memory and shared knowledge base for reusable patterns
-- **Rich Output** - Automatic output tiering (Markdown tables, HTML previews, charts, exports)
+- **Per-Workbook Skill Documentation** - Create and maintain domain-specific skill documents linked to each Excel file. The system remembers your workbook's context, key columns, analytical rules, and validated patterns across sessions.
+- **Dynamic Skill Updates** - Use `excel_update_skill` to add workbook-specific context, warnings, useful analyses, and user preferences that persist across sessions
+- **Functional Code Library** - Link executable code templates directly to workbook skills for repeatable analysis patterns
+
+### Knowledge Base & LLM Enhancement
+
+- **Self-Service Knowledge Base** - Build a knowledge base from your own documents (PDFs, EPUBs) using the automated book ingestion pipeline in `actual_ingestion.py`
+- **Document-to-Knowledge Pipeline** - Extract code examples, formulas, and analysis techniques from PDF books and convert them into searchable knowledge entries with automatic categorization
+- **LLM-Aided Processing Enhancement** - The system intelligently searches your shared knowledge base for relevant patterns, then uses these to improve future processing decisions
+- **Query Memory per Workbook** - Save successful queries directly to the workbook's memory. High-execution-count queries appear first in future searches
+
+### Bulk Data Ingestion & Analysis
+
+- **Bulk Excel Ingestion** - Use `actual_ingestion.py` to process multiple Excel files and extract Python examples, financial analysis patterns, and formula techniques into your knowledge base
+- **Excel → SQLite Conversion** - Convert large workbooks (1M+ rows) to SQLite once for fast querying. Supports per-sheet tables or merged schema mode
+- **Smart Output Tiering** - Results automatically route to the optimal format: inline Markdown tables (≤40 rows), HTML previews (40-500 rows), or Excel downloads (>500 rows)
 
 ## Architecture
 
@@ -69,6 +79,111 @@ The system provides **19 tools** for LLM agents:
 | **Knowledge** | `excel_save_query` | Save working code to workbook memory |
 | **Corpus** | `excel_get_extraction_prompt` | Get PDF extraction prompt |
 | **Corpus** | `excel_extract_to_kb` | Batch-insert extracted entries |
+| **Skill** | `excel_read_skill` | Read per-workbook skill documentation |
+| **Skill** | `excel_update_skill` | Add/update workbook-specific context and patterns |
+
+### Knowledge Base & Skill Management Tools
+
+#### `excel_search_docs(query, path="", category="", difficulty="", top_k=8)`
+Search the knowledge base for documentation and working code examples. Returns:
+- Previously working queries for THIS workbook (from query memory)
+- Relevant documentation entries ranked by BM25 similarity
+
+Use this when you need to find a pattern that works for your specific workbook type.
+
+#### `excel_save_query(path, description, code, sheet="", columns_used="", result_summary="", tags="")`
+Save a successful query to the workbook's memory. This creates a self-improving loop:
+1. Search docs → find template → adapt it
+2. Analysis succeeds
+3. Save working code to workbook memory
+4. Next session: this query appears first in `excel_search_docs` results
+
+#### `excel_read_skill(path)`
+Read the per-workbook skill document—the LLM's accumulated analytical understanding of a specific Excel file. Returns:
+- Context (what the workbook is for)
+- Key columns and their quirks
+- Validated analytical rules
+- Useful analyses that work well
+- Warnings about hidden columns, formula issues
+
+#### `excel_update_skill(path, section, content, mode="append", query_key="")`
+Update the per-workbook skill document. Use these sections:
+- **Context**: Workbook purpose, owner, timeframe (e.g., "FY 2025-26 Nagaland state budget")
+- **Key Columns**: Column meanings and special handling rules
+- **Analytical Rules**: Domain-specific validation logic
+- **Useful Analyses**: Analyses that work well, linked to query keys
+- **Warnings**: Hidden columns, formula issues, data quality problems
+
+---
+
+## Knowledge Base Ingestion Pipeline
+
+### Building Your Own Knowledge Base from Documents
+
+The `actual_ingestion.py` script processes PDFs and EPUB books, extracting code examples and analysis patterns into the knowledge base.
+
+```bash
+# 1. Place your PDF/EPUB files in the project directory
+#    Example: budget_guide.pdf, financial_analysis.epub
+
+# 2. Run the ingestion pipeline
+python actual_ingestion.py
+```
+
+### What Gets Extracted
+
+- **Python code patterns** from documentation and tutorials
+- **Excel formulas** (SUM, VLOOKUP, XLOOKUP, IF, etc.)
+- **Financial analysis techniques** (NPV, IRR, PMT calculations)
+- **Data manipulation patterns** (groupby, merge, pivot tables)
+
+### Output
+
+The script creates knowledge entries with:
+- Automatically detected category (pandas, sql, excel, visualisation, analysis)
+- Subcategory (data_manipulation, formula, chart, lookup, etc.)
+- Tags for improved searchability
+- Source document attribution
+
+---
+
+## Example: Skill Management Workflow
+
+```python
+# 1. Initialize a workbook
+excel_init("budget.xlsx")
+
+# 2. Read the initial skill documentation
+excel_read_skill("budget_ai_workbook.xlsx")
+# → Shows empty skill (new workbook)
+
+# 3. Discover patterns during analysis and save them
+# After finding a useful chart pattern:
+excel_update_skill(
+    "budget_ai_workbook.xlsx",
+    section="Useful Analyses",
+    content="- **Department Utilisation Chart**: Horizontal bar showing % utilisation by dept\n  [query: abc123def]"
+)
+
+# 4. Update context for future sessions
+excel_update_skill(
+    "budget_ai_workbook.xlsx",
+    section="Context",
+    content="FY 2025-26 Nagaland state budget. 7 departments covering Health, Education, Agriculture."
+)
+
+# 5. Next session: read skill to get domain context immediately
+excel_read_skill("budget_ai_workbook.xlsx")
+# → Now includes your custom context and useful patterns
+
+# 6. Search for relevant patterns in your workbook's memory
+excel_search_docs(
+    "utilisation chart by department",
+    path="budget_ai_workbook.xlsx"
+)
+# → Returns both global docs AND your saved queries from this workbook
+```
+
 
 ## Example Workflow
 
@@ -204,7 +319,22 @@ python server.py
   }
 }
 ```
-
+LM Studio/cline configuration when python server is running is separately. This configuration works best and is tested
+```json
+"Excel_Master": {
+      "url": "http://localhost:6699/mcp",
+      "timeout": 1200000
+}
+```
+```json
+cline setting
+"Excel_Master": {
+      "type": "streamableHttp", 
+      "url": "http://localhost:6699/mcp",
+      "disabled": false,
+      "timeout": 1200000
+  }
+```
 ### Install the skill
 
 Copy `SKILL.md` to your agent's skills directory:
