@@ -1,6 +1,6 @@
 # Contributing to ByeByeExcel
 
-This document outlines proposed upgrades and improvements for future consideration. Since this repository is primarily maintained for internal use, not all proposals will be implemented.
+This document outlines proposed upgrades and improvements for future consideration. Since this repository is primarily maintained for generic use and knowledge dissemination, not all proposals will be implemented. Users may directly fork and edit for their purpose
 
 ## Current State
 
@@ -21,12 +21,12 @@ This document outlines proposed upgrades and improvements for future considerati
 
 **Proposal**: Re-integrate fuzzy deduplication as a native tool with:
 - Block-based comparison (3-char keys)
-- Configurable normalisers: Naga names, Indian names, generic text, numeric ranges, dates, codes
+- Configurable normalisers: Names in local context, Indian names, generic text, numeric ranges, dates, codes
 - Band thresholding (High/Review/Possible)
 - HTML visualisation of dedup results
 
 **Priority**: Medium - useful for data cleaning workflows
-
+**Observation** : LLM performs better fuzzy deduplication using run_code than user provide code/claude generated dedupe. Use run_code and guide llm on what kind of dedup or fuzzy logic is needed. 
 ---
 
 ### 2. Enhanced Audit System
@@ -54,7 +54,7 @@ This document outlines proposed upgrades and improvements for future considerati
 - Bulk import from markdown/JSON files
 
 **Priority**: Medium - enables documentation reuse across projects
-
+**The actual_ingestion.py has ability to bulk ingest from multiple files including pdf and epub. The code is added to repo along with code.py**
 ---
 
 ### 4. Web UI for Analysis Results
@@ -73,7 +73,7 @@ This document outlines proposed upgrades and improvements for future considerati
 - Local-only (no server deployment needed)
 
 **Priority**: Low - CLI-based workflow preferred by current users
-
+***Use run_code instead, Chart exports are working well**
 ---
 
 ### 5. Performance Optimisations
@@ -88,6 +88,7 @@ This document outlines proposed upgrades and improvements for future considerati
 
 **Priority**: High - would significantly improve responsiveness
 
+**excel update based db population is there. 50K rows take hardly a minute, hence Dropped**
 ---
 
 ### 6. Configuration System
@@ -115,7 +116,7 @@ This document outlines proposed upgrades and improvements for future considerati
 ```
 
 **Priority**: Medium - improves user configurability
-
+**use run_code, same results available through llm - tested on gemma 4 26 B in LM studio. Results are better and use save skills to save the working code to the skill associated with the workbook**
 ---
 
 ### 7. Version Control Integration
@@ -141,18 +142,19 @@ All upgrades should include:
 4. **Benchmark Suite**: Performance baselines
 
 Current test files located in `test_excel/` (to be restored from backup).
-
+**tested on 50K data and folder removed. Users can generate own test scripts if needed**
 ---
 
-## Contribution Guidelines
+## Contribution & Forking Guidelines
 
-1. **Start with a Plan**: Propose changes via issue before coding
-2. **Follow Existing Patterns**: Match naming, structure, and style
-3. **Test Thoroughly**: Run against multiple Excel file types
-4. **Document Changes**: Update README.md or DESIGN.md as needed
-5. **Keep It Simple**: Avoid premature optimisation
+This repository is intended as a static reference and knowledge base. The owner does not intend to maintain active version tracking, review pull requests, or release new updates. 
 
----
+Instead, users are highly encouraged to **fork the repository and adapt the code directly** for their own purposes. If you choose to modify your fork, we recommend following these best practices:
+
+1. **Keep It Simple**: Maintain the core philosophy of avoiding premature optimization.
+2. **Follow Existing Patterns**: Match the naming conventions, structure, and style already present in the codebase.
+3. **Test Thoroughly**: Run your changes against multiple Excel file types and sizes.
+4. **Document Your Fork**: Update your fork's `README.md` to reflect your specific changes or custom workflows.
 
 ## Reporting Issues
 
