@@ -1,0 +1,18 @@
+# Excel MCP v2 — Requirements
+# Install: pip install -r requirements.txt
+#
+# Python >= 3.10 required
+#
+# Core (required)
+fastmcp>=2.0,<4.0          # MCP server framework
+openpyxl>=3.1.0            # Excel read/write (.xlsx, .xlsm)
+pandas>=2.0.0              # DataFrame analysis and chunked reads
+matplotlib>=3.7.0          # Charts and base64 PNG output
+rapidfuzz>=3.0.0           # Fuzzy string matching for dedup
+
+# Optional but strongly recommended
+oletools>=0.60             # VBA extraction from .xlsm files
+                           # Without this: falls back to raw string scanning
+numpy>=1.24.0              # Required by pandas; explicit for clarity
+sqlite-utils>=3.30         # SQLite utilities (used in large-file pipeline)
+numpy-financial>=1.0.0
